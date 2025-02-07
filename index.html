@@ -127,7 +127,7 @@
                 accessories: accessories.join(", ") || "None"
             };
             
-            fetch("https://script.google.com/macros/s/AKfycbyg0fr2rQ5o624sTgdPMtu8F2cLKwxuTw_PT8Tfrmm2xKkhji1xX9ZZ8XxkjF2IRvBd/exec", {
+            fetch("https://script.google.com/macros/s/AKfycbzE4O8m5ZMUI6UaKaYEUGhNuzjCNRKLeIzafps_zTP0CbTIbyVHQrwjocRvaMMSXnQz/exec", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(loanData)
@@ -141,7 +141,7 @@
         }
 
         function loadLoans() {
-            fetch("https://script.google.com/macros/s/AKfycbyg0fr2rQ5o624sTgdPMtu8F2cLKwxuTw_PT8Tfrmm2xKkhji1xX9ZZ8XxkjF2IRvBd/exec")
+            fetch("https://script.google.com/macros/s/AKfycbzE4O8m5ZMUI6UaKaYEUGhNuzjCNRKLeIzafps_zTP0CbTIbyVHQrwjocRvaMMSXnQz/exec")
             .then(response => response.json())
             .then(data => {
                 var table = document.getElementById("loanTable");
