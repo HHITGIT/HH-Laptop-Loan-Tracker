@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Laptop Loan Tracker</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        h1, h2 {
+            margin-bottom: 20px;
+            font-weight: normal;
+        }
+
+        /* Form Styles */
+        form, .add-laptop-form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 320px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box; /* Ensures input fits within the container */
+        }
+
+        input.error, select.error {
+            border-color: #e74c3c;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Accessories Section */
+        .accessories-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .accessory-checkbox {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .accessory-checkbox label {
+            margin-left: 8px;
+            font-size: 14px;
+        }
+
+        /* Loan Out & Delete Buttons Container */
+        .loan-btn-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .delete-laptop-btn {
+            background-color: #e74c3c;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            width: 48%;
+            display: none;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            max-width: 600px;
+            background: #fff;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+        }
+
+        td {
+            background-color: #fafafa;
+        }
+
+        .return-btn {
+            background-color: #dc3545;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .return-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+    <script>
+        function addLoan() {
+            var userId = document.getElementById("userId");
+            var laptopId = document.getElementById("laptopId");
+
+            // Remove previous error states
+            userId.classList.remove("error");
+            laptopId.classList.remove("error");
+            document.getElementById("error-message").innerHTML = "";
+
+            // Check if both fields are filled
+            if (!userId.value || !laptopId.value || laptopId.value === "addNew") {
+                // Add error styling
+                if (!userId.value) {
+                    userId.classList.add("error");
+                }
+                if (!laptopId.value || laptopId.value === "addNew") {
+                    laptopId.classList.add("error");
+                }
+
+                document.getElementById("error-message").innerHTML = "Please select both a User ID and a Laptop ID before proceeding.";
+                return;
+            }
+
+            var table = document.getElementById("loanTable");
+            var row = table.insertRow();
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            var cell3 = row.insertCell(2);
+            var cell4 = row.insertCell(3);
+            var cell5 = row.insertCell(4);
+
+            var date = new Date().toLocaleDateString();
+
+            var accessories = [];
+            if (document.getElementById("case").checked) accessories.push("Laptop Case");
+            if (document.getElementById("mouse").checked) accessories.push("Mouse");
+            if (document.getElementById("keyboard").checked) accessories.push("Keyboard");
+            if (document.getElementById("charger").checked) accessories.push("Charger");
+
+            cell1.innerHTML = userId.value;
+            cell2.innerHTML = laptopId.value;
+            cell3.innerHTML = date;
+            cell4.innerHTML = accessories.join(", ") || "None";
+            cell5.innerHTML = '<button class="return-btn" onclick="returnLaptop(this)">Return</button>';
+
+            // Reset the form
+            document.getElementById("loanForm").reset();
+            document.getElementById("newLaptopForm").style.display = "none";
+            document.getElementById("deleteLaptopBtn").style.display = "none";
+            document.getElementById("accessoriesSection").style.display = "none";
+        }
+
+        function returnLaptop(button) {
+            var row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        }
+
+        function addLaptop() {
+            var laptopId = document.getElementById("newLaptopId").value;
+            if (laptopId) {
+                var select = document.getElementById("laptopId");
+                var option = document.createElement("option");
+                option.text = laptopId;
+                option.value = laptopId;
+                select.add(option);
+                select.value = laptopId;
+                document.getElementById("newLaptopForm").reset();
+                document.getElementById("newLaptopForm").style.display = "none";
+            }
+        }
+
+        function checkLaptopSelection() {
+            var select = document.getElementById("laptopId");
+            if (select.value === "addNew") {
+                document.getElementById("newLaptopForm").style.display = "block";
+                document.getElementById("accessoriesSection").style.display = "none";
+            } else {
+                document.getElementById("newLaptopForm").style.display = "none";
+                document.getElementById("accessoriesSection").style.display = "block";
+            }
+            // Show the delete button only when a laptop is selected
+            if (select.value !== "addNew") {
+                document.getElementById("deleteLaptopBtn").style.display = "inline-block";
+            } else {
+                document.getElementById("deleteLaptopBtn").style.display = "none";
+            }
+        }
+
+        function deleteLaptop() {
+            var select = document.getElementById("laptopId");
+            var selectedValue = select.value;
+            var options = select.getElementsByTagName("option");
+
+            // Remove the selected laptop ID from the dropdown
+            for (var i = 0; i < options.length; i++) {
+                if (options[i].value === selectedValue) {
+                    select.removeChild(options[i]);
+                    break;
+                }
+            }
+
+            // Hide the delete button after deletion
+            document.getElementById("deleteLaptopBtn").style.display = "none";
+            document.getElementById("accessoriesSection").style.display = "none";
+        }
+    </script>
+</head>
+<body>
+
+    <h1>Laptop Loan Tracker</h1>
+    <form id="loanForm">
+        <div id="error-message" class="error-message"></div>
+
+        <label for="userId">User ID</label>
+        <input type="text" id="userId" required>
+
+        <label for="laptopId">Laptop ID</label>
+        <select id="laptopId" required onchange="checkLaptopSelection()">
+            <option value="">Select Laptop</option>
+            <option value="LOAN1">LOAN1</option>
+            <option value="LOAN2">LOAN2</option>
+            <option value="LOAN3">LOAN3</option>
+            <option value="LOAN4">LOAN4</option>
+            <option value="addNew">Add New Laptop</option>
+        </select>
+
+        <div id="newLaptopForm" style="display:none;">
+            <label for="newLaptopId">New Laptop ID</label>
+            <input type="text" id="newLaptopId" required>
+            <button type="button" onclick="addLaptop()">Add Laptop</button>
+        </div>
+
+        <div id="accessoriesSection" class="accessories-section">
+            <label>Accessories</label>
+            <div class="accessory-checkbox">
+                <input type="checkbox" id="case">
+                <label for="case">Laptop Case</label>
+            </div>
+            <div class="accessory-checkbox">
+                <input type="checkbox" id="mouse">
+                <label for="mouse">Mouse</label>
+            </div>
+            <div class="accessory-checkbox">
+                <input type="checkbox" id="keyboard">
+                <label for="keyboard">Keyboard</label>
+            </div>
+            <div class="accessory-checkbox">
+                <input type="checkbox" id="charger">
+                <label for="charger">Charger</label>
+            </div>
+        </div>
+
+        <div class="loan-btn-container">
+            <button type="button" onclick="addLoan()">Loan Out</button>
+            <button type="button" id="deleteLaptopBtn" class="delete-laptop-btn" onclick="deleteLaptop()">Delete Laptop</button>
+        </div>
+    </form>
+
+    <h2>Loaned Laptops</h2>
+    <table id="loanTable">
+        <tr>
+            <th>User ID</th>
+            <th>Laptop ID</th>
+            <th>Date</th>
+            <th>Accessories</th>
+            <th>Actions</th>
+        </tr>
+    </table>
+
+</body>
+</html>
