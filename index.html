@@ -1,162 +1,328 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laptop Loan Tracker</title>
     <style>
         /* Global Styles */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f0f2f5;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
             color: #333;
             margin: 0;
             padding: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         h1, h2 {
-            font-weight: 600;
-            color: #333;
+            margin-bottom: 20px;
+            font-weight: normal;
         }
 
-        .container {
+        /* Form Styles */
+        form, .add-laptop-form {
             background: #fff;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 90%;
-            max-width: 600px;
-        }
-
-        form {
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 320px;
+            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
         }
 
         label {
+            display: block;
+            margin-bottom: 8px;
             font-weight: 500;
         }
 
-        input[type="text"], button {
-            padding: 10px;
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
             font-size: 16px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
+            box-sizing: border-box; /* Ensures input fits within the container */
+        }
+
+        input.error, select.error {
+            border-color: #e74c3c;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-bottom: 10px;
         }
 
         button {
+            width: 100%;
+            padding: 12px;
             background-color: #007bff;
-            color: white;
             border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 16px;
             cursor: pointer;
-            transition: background 0.3s ease;
+            margin-bottom: 10px;
         }
 
         button:hover {
             background-color: #0056b3;
         }
 
+        /* Accessories Section */
+        .accessories-section {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .accessory-checkbox {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .accessory-checkbox label {
+            margin-left: 8px;
+            font-size: 14px;
+        }
+
+        /* Loan Out & Delete Buttons Container */
+        .loan-btn-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .delete-laptop-btn {
+            background-color: #e74c3c;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+            width: 48%;
+            display: none;
+        }
+
+        /* Table Styles */
         table {
             width: 100%;
+            max-width: 600px;
+            background: #fff;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
         th, td {
             padding: 12px;
             border: 1px solid #ddd;
             text-align: left;
+            font-size: 14px;
         }
 
         th {
-            background-color: #007bff;
-            color: white;
+            background-color: #f8f8f8;
+            font-weight: bold;
+        }
+
+        td {
+            background-color: #fafafa;
+        }
+
+        .return-btn {
+            background-color: #dc3545;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .return-btn:hover {
+            background-color: #c82333;
         }
     </style>
-</head>
-<body>
-    <h1>Laptop Loan Tracker</h1>
-    <div class="container">
-        <form>
-            <label for="userId">User ID</label>
-            <input type="text" id="userId" required>
-            <label for="laptopId">Laptop ID</label>
-            <input type="text" id="laptopId" required>
-            <label>Accessories</label>
-            <div>
-                <input type="checkbox" id="case"> Laptop Case
-                <input type="checkbox" id="mouse"> Mouse
-                <input type="checkbox" id="keyboard"> Keyboard
-                <input type="checkbox" id="charger"> Charger
-            </div>
-            <button type="button" onclick="addLoan()">Loan Out</button>
-        </form>
-    </div>
-    <h2>Loaned Laptops</h2>
-    <div class="container">
-        <table id="loanTable">
-            <tr>
-                <th>User ID</th>
-                <th>Laptop ID</th>
-                <th>Date</th>
-                <th>Accessories</th>
-            </tr>
-        </table>
-    </div>
+ <!DOCTYPE html>
+<html>
+<head>
+    <title>Laptop Loan Tracker</title>
+    <style>
+        /* (same styles as in your previous HTML) */
+    </style>
     <script>
+        // Check if there's existing data in localStorage and load it
+        function loadLoanData() {
+            const storedLoans = JSON.parse(localStorage.getItem('loans'));
+            if (storedLoans && storedLoans.length > 0) {
+                const table = document.getElementById("loanTable");
+                for (let i = 0; i < storedLoans.length; i++) {
+                    const row = table.insertRow();
+                    const loan = storedLoans[i];
+                    row.insertCell(0).innerHTML = loan.userId;
+                    row.insertCell(1).innerHTML = loan.laptopId;
+                    row.insertCell(2).innerHTML = loan.date;
+                    row.insertCell(3).innerHTML = loan.accessories;
+                    row.insertCell(4).innerHTML = '<button class="return-btn" onclick="returnLaptop(this)">Return</button>';
+                }
+            }
+        }
+
+        // Store loan data in localStorage
+        function saveLoanData(loanData) {
+            let loans = JSON.parse(localStorage.getItem('loans')) || [];
+            loans.push(loanData);
+            localStorage.setItem('loans', JSON.stringify(loans));
+        }
+
+        // Add loan
         function addLoan() {
-            var userId = document.getElementById("userId").value;
-            var laptopId = document.getElementById("laptopId").value;
+            var userId = document.getElementById("userId");
+            var laptopId = document.getElementById("laptopId");
+
+            // Remove previous error states
+            userId.classList.remove("error");
+            laptopId.classList.remove("error");
+            document.getElementById("error-message").innerHTML = "";
+
+            // Check if both fields are filled
+            if (!userId.value || !laptopId.value || laptopId.value === "addNew") {
+                // Add error styling
+                if (!userId.value) {
+                    userId.classList.add("error");
+                }
+                if (!laptopId.value || laptopId.value === "addNew") {
+                    laptopId.classList.add("error");
+                }
+
+                document.getElementById("error-message").innerHTML = "Please select both a User ID and a Laptop ID before proceeding.";
+                return;
+            }
+
             var date = new Date().toLocaleDateString();
+
             var accessories = [];
             if (document.getElementById("case").checked) accessories.push("Laptop Case");
             if (document.getElementById("mouse").checked) accessories.push("Mouse");
             if (document.getElementById("keyboard").checked) accessories.push("Keyboard");
             if (document.getElementById("charger").checked) accessories.push("Charger");
-            
+
             var loanData = {
-                userId: userId,
-                laptopId: laptopId,
+                userId: userId.value,
+                laptopId: laptopId.value,
                 date: date,
                 accessories: accessories.join(", ") || "None"
             };
-            
-            fetch("https://script.google.com/macros/s/AKfycbzE4O8m5ZMUI6UaKaYEUGhNuzjCNRKLeIzafps_zTP0CbTIbyVHQrwjocRvaMMSXnQz/exec", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(loanData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert("Loan added successfully!");
-                loadLoans();
-            })
-            .catch(error => console.error("Error:", error));
+
+            // Save loan data locally
+            saveLoanData(loanData);
+
+            // Add to table
+            var table = document.getElementById("loanTable");
+            var row = table.insertRow();
+            row.insertCell(0).innerHTML = loanData.userId;
+            row.insertCell(1).innerHTML = loanData.laptopId;
+            row.insertCell(2).innerHTML = loanData.date;
+            row.insertCell(3).innerHTML = loanData.accessories;
+            row.insertCell(4).innerHTML = '<button class="return-btn" onclick="returnLaptop(this)">Return</button>';
+
+            // Reset form
+            document.getElementById("loanForm").reset();
+            document.getElementById("newLaptopForm").style.display = "none";
+            document.getElementById("deleteLaptopBtn").style.display = "none";
+            document.getElementById("accessoriesSection").style.display = "none";
         }
 
-        function loadLoans() {
-            fetch("https://script.google.com/macros/s/AKfycbzE4O8m5ZMUI6UaKaYEUGhNuzjCNRKLeIzafps_zTP0CbTIbyVHQrwjocRvaMMSXnQz/exec")
-            .then(response => response.json())
-            .then(data => {
-                var table = document.getElementById("loanTable");
-                table.innerHTML = "<tr><th>User ID</th><th>Laptop ID</th><th>Date</th><th>Accessories</th></tr>";
-                data.forEach(row => {
-                    var newRow = table.insertRow();
-                    newRow.insertCell(0).innerText = row.userId;
-                    newRow.insertCell(1).innerText = row.laptopId;
-                    newRow.insertCell(2).innerText = row.date;
-                    newRow.insertCell(3).innerText = row.accessories;
-                });
-            });
+        // Return laptop
+        function returnLaptop(button) {
+            var row = button.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+
+            // Remove the loan from localStorage
+            const userId = row.cells[0].innerHTML;
+            const laptopId = row.cells[1].innerHTML;
+            const loans = JSON.parse(localStorage.getItem('loans')) || [];
+            const updatedLoans = loans.filter(loan => loan.userId !== userId || loan.laptopId !== laptopId);
+            localStorage.setItem('loans', JSON.stringify(updatedLoans));
         }
 
-        window.onload = loadLoans;
+        // Load the loan data when the page loads
+        window.onload = function() {
+            loadLoanData();
+        };
     </script>
+</head>
+<body>
+
+    <h1>Laptop Loan Tracker</h1>
+    <form id="loanForm">
+        <div id="error-message" class="error-message"></div>
+
+        <label for="userId">User ID</label>
+        <input type="text" id="userId" required>
+
+        <label for="laptopId">Laptop ID</label>
+        <select id="laptopId" required onchange="checkLaptopSelection()">
+            <option value="">Select Laptop</option>
+            <option value="LOAN1">LOAN1</option>
+            <option value="LOAN2">LOAN2</option>
+            <option value="LOAN3">LOAN3</option>
+            <option value="LOAN4">LOAN4</option>
+            <option value="addNew">Add New Laptop</option>
+        </select>
+
+        <div id="newLaptopForm" style="display:none;">
+            <label for="newLaptopId">New Laptop ID</label>
+            <input type="text" id="newLaptopId" required>
+            <button type="button" onclick="addLaptop()">Add Laptop</button>
+        </div>
+
+        <div id="accessoriesSection" class="accessories-section">
+            <label>Accessories</label>
+            <div class="accessory-checkbox">
+                <input type="checkbox" id="case">
+                <label for="case">Laptop Case</label>
+            </div>
+            <div class="accessory-checkbox">
+                <input type="checkbox" id="mouse">
+                <label for="mouse">Mouse</label>
+            </div>
+            <div class="accessory-checkbox">
+                <input type="checkbox" id="keyboard">
+                <label for="keyboard">Keyboard</label>
+            </div>
+            <div class="accessory-checkbox">
+                <input type="checkbox" id="charger">
+                <label for="charger">Charger</label>
+            </div>
+        </div>
+
+        <div class="loan-btn-container">
+            <button type="button" onclick="addLoan()">Loan Out</button>
+            <button type="button" id="deleteLaptopBtn" class="delete-laptop-btn" onclick="deleteLaptop()">Delete Laptop</button>
+        </div>
+    </form>
+
+    <h2>Loaned Laptops</h2>
+    <table id="loanTable">
+        <tr>
+            <th>User ID</th>
+            <th>Laptop ID</th>
+            <th>Date</th>
+            <th>Accessories</th>
+            <th>Actions</th>
+        </tr>
+    </table>
+
 </body>
 </html>
