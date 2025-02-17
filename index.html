@@ -153,39 +153,52 @@
             background-color: #c82333;
         }
     </style>
- <!DOCTYPE html>
-<html>
 <head>
     <title>Laptop Loan Tracker</title>
     <style>
-        /* (same styles as in your previous HTML) */
+        /* (Your existing styles here) */
     </style>
     <script>
-        // Check if there's existing data in localStorage and load it
+        // Function to load the data from Local Storage and populate the table
         function loadLoanData() {
-            const storedLoans = JSON.parse(localStorage.getItem('loans'));
-            if (storedLoans && storedLoans.length > 0) {
-                const table = document.getElementById("loanTable");
-                for (let i = 0; i < storedLoans.length; i++) {
-                    const row = table.insertRow();
-                    const loan = storedLoans[i];
-                    row.insertCell(0).innerHTML = loan.userId;
-                    row.insertCell(1).innerHTML = loan.laptopId;
-                    row.insertCell(2).innerHTML = loan.date;
-                    row.insertCell(3).innerHTML = loan.accessories;
-                    row.insertCell(4).innerHTML = '<button class="return-btn" onclick="returnLaptop(this)">Return</button>';
+            var storedLoans = localStorage.getItem("loans");
+            if (storedLoans) {
+                var loans = JSON.parse(storedLoans);
+                var table = document.getElementById("loanTable");
+                for (var i = 0; i < loans.length; i++) {
+                    var row = table.insertRow();
+                    var cell1 = row.insertCell(0);
+                    var cell2 = row.insertCell(1);
+                    var cell3 = row.insertCell(2);
+                    var cell4 = row.insertCell(3);
+                    var cell5 = row.insertCell(4);
+                    
+                    cell1.innerHTML = loans[i].userId;
+                    cell2.innerHTML = loans[i].laptopId;
+                    cell3.innerHTML = loans[i].date;
+                    cell4.innerHTML = loans[i].accessories.join(", ") || "None";
+                    cell5.innerHTML = '<button class="return-btn" onclick="returnLaptop(this)">Return</button>';
                 }
             }
         }
 
-        // Store loan data in localStorage
-        function saveLoanData(loanData) {
-            let loans = JSON.parse(localStorage.getItem('loans')) || [];
-            loans.push(loanData);
-            localStorage.setItem('loans', JSON.stringify(loans));
+        // Function to save the loan data to Local Storage
+        function saveLoanData() {
+            var loans = [];
+            var table = document.getElementById("loanTable");
+            for (var i = 1; i < table.rows.length; i++) {
+                var row = table.rows[i];
+                loans.push({
+                    userId: row.cells[0].innerHTML,
+                    laptopId: row.cells[1].innerHTML,
+                    date: row.cells[2].innerHTML,
+                    accessories: row.cells[3].innerHTML === "None" ? [] : row.cells[3].innerHTML.split(", "),
+                });
+            }
+            localStorage.setItem("loans", JSON.stringify(loans));
         }
 
-        // Add loan
+        // Add loan to the table and update localStorage
         function addLoan() {
             var userId = document.getElementById("userId");
             var laptopId = document.getElementById("laptopId");
@@ -209,6 +222,14 @@
                 return;
             }
 
+            var table = document.getElementById("loanTable");
+            var row = table.insertRow();
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            var cell3 = row.insertCell(2);
+            var cell4 = row.insertCell(3);
+            var cell5 = row.insertCell(4);
+
             var date = new Date().toLocaleDateString();
 
             var accessories = [];
@@ -217,49 +238,85 @@
             if (document.getElementById("keyboard").checked) accessories.push("Keyboard");
             if (document.getElementById("charger").checked) accessories.push("Charger");
 
-            var loanData = {
-                userId: userId.value,
-                laptopId: laptopId.value,
-                date: date,
-                accessories: accessories.join(", ") || "None"
-            };
+            cell1.innerHTML = userId.value;
+            cell2.innerHTML = laptopId.value;
+            cell3.innerHTML = date;
+            cell4.innerHTML = accessories.join(", ") || "None";
+            cell5.innerHTML = '<button class="return-btn" onclick="returnLaptop(this)">Return</button>';
 
-            // Save loan data locally
-            saveLoanData(loanData);
-
-            // Add to table
-            var table = document.getElementById("loanTable");
-            var row = table.insertRow();
-            row.insertCell(0).innerHTML = loanData.userId;
-            row.insertCell(1).innerHTML = loanData.laptopId;
-            row.insertCell(2).innerHTML = loanData.date;
-            row.insertCell(3).innerHTML = loanData.accessories;
-            row.insertCell(4).innerHTML = '<button class="return-btn" onclick="returnLaptop(this)">Return</button>';
-
-            // Reset form
+            // Reset the form
             document.getElementById("loanForm").reset();
             document.getElementById("newLaptopForm").style.display = "none";
             document.getElementById("deleteLaptopBtn").style.display = "none";
             document.getElementById("accessoriesSection").style.display = "none";
+
+            // Save the updated data to localStorage
+            saveLoanData();
         }
 
-        // Return laptop
         function returnLaptop(button) {
             var row = button.parentNode.parentNode;
             row.parentNode.removeChild(row);
-
-            // Remove the loan from localStorage
-            const userId = row.cells[0].innerHTML;
-            const laptopId = row.cells[1].innerHTML;
-            const loans = JSON.parse(localStorage.getItem('loans')) || [];
-            const updatedLoans = loans.filter(loan => loan.userId !== userId || loan.laptopId !== laptopId);
-            localStorage.setItem('loans', JSON.stringify(updatedLoans));
+            // Save the updated data to localStorage after returning the laptop
+            saveLoanData();
         }
 
-        // Load the loan data when the page loads
+        function addLaptop() {
+            var laptopId = document.getElementById("newLaptopId").value;
+            if (laptopId) {
+                var select = document.getElementById("laptopId");
+                var option = document.createElement("option");
+                option.text = laptopId;
+                option.value = laptopId;
+                select.add(option);
+                select.value = laptopId;
+                document.getElementById("newLaptopForm").reset();
+                document.getElementById("newLaptopForm").style.display = "none";
+            }
+        }
+
+        function checkLaptopSelection() {
+            var select = document.getElementById("laptopId");
+            if (select.value === "addNew") {
+                document.getElementById("newLaptopForm").style.display = "block";
+                document.getElementById("accessoriesSection").style.display = "none";
+            } else {
+                document.getElementById("newLaptopForm").style.display = "none";
+                document.getElementById("accessoriesSection").style.display = "block";
+            }
+            // Show the delete button only when a laptop is selected
+            if (select.value !== "addNew") {
+                document.getElementById("deleteLaptopBtn").style.display = "inline-block";
+            } else {
+                document.getElementById("deleteLaptopBtn").style.display = "none";
+            }
+        }
+
+        function deleteLaptop() {
+            var select = document.getElementById("laptopId");
+            var selectedValue = select.value;
+            var options = select.getElementsByTagName("option");
+
+            // Remove the selected laptop ID from the dropdown
+            for (var i = 0; i < options.length; i++) {
+                if (options[i].value === selectedValue) {
+                    select.removeChild(options[i]);
+                    break;
+                }
+            }
+
+            // Hide the delete button after deletion
+            document.getElementById("deleteLaptopBtn").style.display = "none";
+            document.getElementById("accessoriesSection").style.display = "none";
+
+            // Save the updated data to localStorage
+            saveLoanData();
+        }
+
+        // Load the saved loan data when the page loads
         window.onload = function() {
             loadLoanData();
-        };
+        }
     </script>
 </head>
 <body>
