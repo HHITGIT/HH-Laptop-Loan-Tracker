@@ -153,11 +153,6 @@
             background-color: #c82333;
         }
     </style>
-<head>
-    <title>Laptop Loan Tracker</title>
-    <style>
-        /* (Your existing styles here) */
-    </style>
     <script>
         // Function to load the data from Local Storage and populate the table
         function loadLoanData() {
@@ -230,7 +225,9 @@
             var cell4 = row.insertCell(3);
             var cell5 = row.insertCell(4);
 
-            var date = new Date().toLocaleDateString();
+            var date = new Date();
+            var formattedDate = date.toLocaleDateString();
+            var formattedTime = date.toLocaleTimeString();
 
             var accessories = [];
             if (document.getElementById("case").checked) accessories.push("Laptop Case");
@@ -240,7 +237,7 @@
 
             cell1.innerHTML = userId.value;
             cell2.innerHTML = laptopId.value;
-            cell3.innerHTML = date;
+            cell3.innerHTML = `${formattedDate} ${formattedTime}`;
             cell4.innerHTML = accessories.join(", ") || "None";
             cell5.innerHTML = '<button class="return-btn" onclick="returnLaptop(this)">Return</button>';
 
@@ -269,6 +266,11 @@
                 option.text = laptopId;
                 option.value = laptopId;
                 select.add(option);
+
+                // Move the "Add New Laptop" option to the bottom
+                var addNewOption = select.querySelector('option[value="addNew"]');
+                select.appendChild(addNewOption);
+
                 select.value = laptopId;
                 document.getElementById("newLaptopForm").reset();
                 document.getElementById("newLaptopForm").style.display = "none";
@@ -375,7 +377,7 @@
         <tr>
             <th>User ID</th>
             <th>Laptop ID</th>
-            <th>Date</th>
+            <th>Date & Time</th>
             <th>Accessories</th>
             <th>Actions</th>
         </tr>
